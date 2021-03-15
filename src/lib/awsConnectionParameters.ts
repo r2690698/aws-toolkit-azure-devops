@@ -20,13 +20,88 @@ export const awsAssumeRoleArnVariable = 'AWS.AssumeRoleArn'
 export const awsExternalIdVariable = 'AWS.ExternalId'
 export const awsRoleSessionNameVariable = 'AWS.RoleSessionName'
 
+// Task variable names that are be used to supply the STS AssumeRoleRequest
+// options with Seassion Tags for audit in AWS CloudTrail 
+export const buildRequestedFor = tl.getVariable('Build.RequestedFor')
+export const buildRequestedForEmail= tl.getVariable('Build.RequestedForEmail')
+export const buildSourceVersion = tl.getVariable('Build.SourceVersion')
+export const buildReason = tl.getVariable('Build.Reason')
+export const buildBuildId = tl.getVariable('Build.BuildId')
+export const buildSourceBranchName = tl.getVariable('Build.SourceBranchName')
+export const buildRepositoryID = tl.getVariable('Build.Repository.ID')
+export const buildRepositoryName = tl.getVariable('Build.Repository.Name')
+export const systemCollectionId = tl.getVariable('System.CollectionId')
+export const systemDefinitionId = tl.getVariable('System.DefinitionId')
+export const systemTeamProject = tl.getVariable('System.TeamProject')
+export const systemTeamProjectId = tl.getVariable('System.TeamProjectId')
+
+// STS AssumeRole Session Tag 
+export const sessionTags = [
+    {
+        "Key": "RequestedFor",
+        "Value": buildRequestedFor
+    },
+    {
+        "Key": "RequestedForEmail",
+        "Value": buildRequestedForEmail
+    },
+    {
+        "Key": "SourceVersion",
+        "Value": buildSourceVersion
+    },
+    {
+        "Key": "Reason", 
+        "Value": buildReason
+    },
+    {
+        "Key": "BuildId",
+        "Value": buildBuildId
+    },
+    {
+        "Key": "SourceBranchName",
+        "Value": buildSourceBranchName
+    },
+    {
+        "Key": "RepositoryID",
+        "Value": buildRepositoryID
+    },
+    {
+        "Key": "RepositoryName",
+        "Value": buildRepositoryName
+    },
+    {
+        "Key": "CollectionId",
+        "Value": systemCollectionId
+    },
+    {
+        "Key": "DefinitionId",
+        "Value": systemDefinitionId
+    },
+    {
+        "Key": "TeamProject",
+        "Value": systemTeamProject
+    },
+    {
+        "Key": "TeamProjectId",
+        "Value": systemTeamProjectId
+    },
+  ]
+/**
+ * Gather Tags that are not undefined
+ */
+type notUndefinedTag = {
+    Key: string;
+    Value: string;
+}
+const notUndefinedTags: notUndefinedTag[] = sessionTags.filter(t => t.Value !== undefined)
+
 // Task variable name that can be used to supply the region setting to
 // a task.
 export const awsRegionVariable = 'AWS.Region'
 
 // default session name to apply to the generated credentials if not overridden
 // in the endpoint definition
-export const defaultRoleSessionName = 'aws-vsts-tools'
+export const defaultRoleSessionName = 'aws-toolkit-azure'
 // The minimum duration, 15mins, should be enough for a task
 export const minDuration = 900
 export const maxduration = 43200
@@ -191,7 +266,8 @@ function createEndpointCredentials(
     const options: STS.AssumeRoleRequest = {
         RoleArn: assumeRoleARN,
         DurationSeconds: duration,
-        RoleSessionName: roleSessionName
+        RoleSessionName: roleSessionName,
+        Tags: notUndefinedTags
     }
     if (externalId) {
         options.ExternalId = externalId
